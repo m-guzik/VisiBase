@@ -1,2 +1,32 @@
 @import 'tailwindcss';
-@plugin '@tailwindcss/forms'
+@plugin '@tailwindcss/forms';
+
+@plugin 'flowbite/plugin';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary-50: #fff5f2;
+  --color-primary-100: #fff1ee;
+  --color-primary-200: #ffe4de;
+  --color-primary-300: #ffd5cc;
+  --color-primary-400: #ffbcad;
+  --color-primary-500: #fe795d;
+  --color-primary-600: #ef562f;
+  --color-primary-700: #eb4f27;
+  --color-primary-800: #cc4522;
+  --color-primary-900: #a5371b;
+  --color-my-light: #f1f1e6;
+  --color-my-medium: #003049;
+  --color-my-dark: #ffbc46;
+  /* --color-my-light: #f1dede;
+  --color-my-medium: #d496a7;
+  --color-my-dark: #5d576b; */
+  /* --color-my-light: #f9eae1;
+  --color-my-medium: #cc8b86;
+  --color-my-dark: #7d4f50; */
+}
+
+@source "../node_modules/flowbite-svelte/dist";
+
+

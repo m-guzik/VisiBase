@@ -33,17 +33,22 @@
     });
 
 </script>
-  
-<a href="https://wikibase.world"><h1>Wikibase World</h1></a>
-  
-  {#if status === "waiting"}
-    <p>⏳ Trwa pobieranie danych...</p>
-  {/if}
-  
-  {#if status === "done"}
-    <ul>
-      {#each data as item}
-        <li>{item}</li>
-      {/each}
-    </ul>
-  {/if}
+
+
+
+
+<div class=m-4>
+  <a href="https://wikibase.world"><p class="mb-4 font-bold">Wikibase World</p></a>
+    
+    {#if status === "waiting"}
+      <p>⏳ Trwa pobieranie danych...</p>
+    {/if}
+    
+    {#if status === "done"}
+      <ul>
+        {#each data as item}
+          <li>{item}</li>
+        {/each}
+      </ul>
+    {/if}
+</div>

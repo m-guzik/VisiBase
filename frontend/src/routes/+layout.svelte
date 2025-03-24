@@ -8,8 +8,11 @@
 
 
 
-<Header></Header>
+<Header/>
 
 {@render children()}
 
-<Footer></Footer>
+<footer>
+	<Footer />
+</footer>
+

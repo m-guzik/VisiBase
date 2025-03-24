@@ -34,16 +34,20 @@
 
 </script>
 
-<a href="https://lexbib.elex.is"><h1>LexBib</h1></a>
-  
-  {#if status === "waiting"}
-    <p>⏳ Trwa pobieranie danych...</p>
-  {/if}
-  
-  {#if status === "done"}
-    <ul>
-      {#each data as item}
-        <li>{item}</li>
-      {/each}
-    </ul>
-  {/if}
+
+
+<div class=m-4>
+  <a href="https://lexbib.elex.is"><p class="mb-4 font-bold">LexBib</p></a>
+    
+    {#if status === "waiting"}
+      <p>⏳ Trwa pobieranie danych...</p>
+    {/if}
+    
+    {#if status === "done"}
+      <ul>
+        {#each data as item}
+          <li>{item}</li>
+        {/each}
+      </ul>
+    {/if}
+</div>

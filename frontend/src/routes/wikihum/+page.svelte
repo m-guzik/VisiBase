@@ -1,5 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { A, Img } from 'flowbite-svelte';
+    import { ArrowRightOutline } from 'flowbite-svelte-icons';
   
     let status = "waiting";
     let requestId = "wikihum";
@@ -33,18 +35,22 @@
     });
 
 </script>
-  
-<a href="https://wikihum.lab.dariah.pl"><h1>WikiHum</h1></a>
-  
-  {#if status === "waiting"}
-    <p>⏳ Trwa pobieranie danych...</p>
-  {/if}
-  
-  {#if status === "done"}
-    <ul>
-      {#each data as item}
-        <li>{item}</li>
-      {/each}
-    </ul>
-  {/if}
+
+
+<div class=m-4>
+
+  <a href="https://wikihum.lab.dariah.pl"><p class="mb-4 font-bold">WikiHum</p></a>
+    
+    {#if status === "waiting"}
+      <p>⏳ Trwa pobieranie danych...</p>
+    {/if}
+    
+    {#if status === "done"}
+      <ul>
+        {#each data as item}
+          <li>{item}</li>
+        {/each}
+      </ul>
+    {/if}
+</div>
 

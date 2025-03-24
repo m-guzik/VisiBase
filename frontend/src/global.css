@@ -1,3 +1,9 @@
 body {
-    background-color: #f1f1e6;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
+
+footer {
+    margin-top: auto;
+  }

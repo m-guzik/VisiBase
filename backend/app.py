@@ -30,6 +30,13 @@ async def process_data(request_id: str, websocket: WebSocket):
     await websocket.close()
 
 
+async def process_properties_data(request_id: str, websocket: WebSocket):
+    wiki_data = get_data.get_properties(request_id)
+    data = {"message": request_id, "data": wiki_data}
+    await websocket.send_json({"status": "done", "data": data})
+    await websocket.close()
+
+
 @app.websocket("/ws/{request_id}")
 async def websocket_endpoint(request_id: str, websocket: WebSocket):
     await websocket.accept()
@@ -39,3 +46,14 @@ async def websocket_endpoint(request_id: str, websocket: WebSocket):
     except WebSocketDisconnect:
         print(f"Client {request_id} disconnected")
         del connections[request_id]
+
+@app.websocket("/pws/{request_id}")
+async def websocket_endpoint(request_id: str, websocket: WebSocket):
+    await websocket.accept()
+    connections[request_id] = websocket
+    try:
+        await process_properties_data(request_id, websocket)
+    except WebSocketDisconnect:
+        print(f"Client {request_id} disconnected")
+        del connections[request_id]
+

@@ -1,2 +1,2 @@
 # VisiBase
-Visualizer for your Wikibase
+Visualize for your Wikibase

@@ -24,16 +24,15 @@ def home():
 
 
 async def process_data(request_id: str, websocket: WebSocket):
-    wiki_data = get_data.get_classes(request_id)
-    data = {"message": request_id, "data": wiki_data}
-    await websocket.send_json({"status": "done", "data": data})
+    classes_data = get_data.get_classes(request_id)
+    await websocket.send_json({"status": "done", "request_id": request_id, "data": classes_data})
     await websocket.close()
 
 
 async def process_properties_data(request_id: str, websocket: WebSocket):
-    wiki_data = get_data.get_properties(request_id)
-    data = {"message": request_id, "data": wiki_data}
-    await websocket.send_json({"status": "done", "data": data})
+    properties_data, connected_properties = get_data.get_properties(request_id)
+    data = {"properties": properties_data, "connected": connected_properties}
+    await websocket.send_json({"status": "done", "request_id": request_id, "data": data})
     await websocket.close()
 
 

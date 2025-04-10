@@ -20,7 +20,7 @@
   });
 
 
-  let btnClass = "bg-accent-dark text-medium-light dark:bg-accent-dark hover:text-darker-dark hover:bg-accent-light dark:hover:bg-accent-light focus:ring-2 focus:ring-accent focus:outline-none dark:focus:ring-2 dark:focus:ring-accent dark:focus:outline-none m-2 w-xs";
+  let btnClass = "bg-accent-dark text-medium-light dark:bg-accent-dark hover:text-darker-dark hover:bg-accent-light dark:hover:bg-accent-light focus:ring-2 focus:ring-accent focus:outline-none dark:focus:ring-2 dark:focus:ring-accent dark:focus:outline-none m-2 w-md  text-lg";
 
 </script>
 
@@ -31,20 +31,20 @@
 
 
 <div class="grid grid-cols-1 md:grid-cols-2 place-items-center p-10">
-  <Card class="bg-medium-light dark:bg-medium-dark rounded-md max-w-sm w-full h-full flex flex-col">
+  <Card class="bg-medium-light dark:bg-medium-dark rounded-md w-lg h-full flex flex-col" size="xl">
     <h5 class="text-3xl font-bold tracking-tight text-lighter-dark dark:text-darker-light text-center ">Podaj dane swojej instancji Wikibase</h5>
       
     <form class="m-2">
       <div>
-        <Label for="name" class="text-lighter-dark dark:text-darker-light text-left mt-2">Nazwa</Label>
+        <Label for="name" class="text-lighter-dark dark:text-darker-light text-left mt-2 text-lg">Nazwa</Label>
         <Input type="text" id="name" placeholder="e.g. WikiHum" required/>
       </div>
       <div>
-        <Label for="api-address" class="text-lighter-dark dark:text-darker-light text-left mt-2">Adres API</Label>
+        <Label for="api-address" class="text-lighter-dark dark:text-darker-light text-left mt-2 text-lg">Adres API</Label>
         <Input type="text" id="api-address" placeholder="e.g. https://wikihum.lab.dariah.pl/api.php" required/>
       </div>
       <div>
-        <Label for="sparql-endpoint" class="text-lighter-dark dark:text-darker-light text-left mt-2">SPARQL endpoint</Label>
+        <Label for="sparql-endpoint" class="text-lighter-dark dark:text-darker-light text-left mt-2 text-lg">SPARQL endpoint</Label>
         <Input type="text" id="sparql-endpoint" placeholder="e.g. https://wikihum.lab.dariah.pl/bigdata/sparql" required/>
       </div>
     </form>
@@ -52,7 +52,7 @@
     <Button class={btnClass}>Połącz</Button>
   </Card>
 
-  <Card class="bg-medium-light dark:bg-medium-dark rounded-md text-center max-w-sm w-full h-full flex flex-col ">
+  <Card class="bg-medium-light dark:bg-medium-dark rounded-md text-center min-w-lg h-full flex flex-col ">
     <h5 class="text-3xl font-bold tracking-tight text-lighter-dark dark:text-darker-light text-center">Wybierz przykład z listy</h5>
     <div class="m-auto">
       <ul>

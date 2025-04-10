@@ -4,7 +4,6 @@
     import { Card, Spinner, Tabs, TabItem, Tooltip } from 'flowbite-svelte';
     import { ArrowRightOutline } from 'flowbite-svelte-icons';
 
-
     import Properties from '$lib/Properties.svelte';
 
 
@@ -27,15 +26,16 @@
 
     let requestId = data.instance.name;
 
-    let status = $state("waiting");
-    let response : ClassItem[] = $state([]);
+    let statusClasses = $state("waiting");
+    let responseClasses : ClassItem[] = $state([]);
 
-    let p_status = $state("waiting");
-    let p_response : PropertyItem[] = $state([]);
-    let datatypes: string[] = $state([]);
+    let statusProperties = $state("waiting");
+    let responseProperties : PropertyItem[] = $state([]);
+    let datatypesProperties: string[] = $state([]);
+    let connectedProperties : {} = $state({});
 
-    let number_of_classes : number = $state(0);
-    let number_of_properties : number = $state(0);
+    let numberOfClasses : number = $state(0);
+    let numberOfProperties : number = $state(0);
 
 
     function startWebSocket() {
@@ -50,10 +50,10 @@
 
           if (message.status === "done") {
             console.log(event);
-            status = "done";
-            response = message.data.data;
-            response = [...response].sort((a, b) => a.number - b.number);
-            number_of_classes = response.length;
+            statusClasses = "done";
+            responseClasses = message.data;
+            responseClasses = [...responseClasses].sort((a, b) => a.number - b.number);
+            numberOfClasses = responseClasses.length;
           }    
         }
       };
@@ -75,17 +75,19 @@
 
           if (message.status === "done") {
             console.log(event);
-            p_status = "done";
-            p_response = message.data.data;
-            p_response = [...p_response].sort((a, b) => a.number - b.number);
-            datatypes = [...new Set(p_response.map(item => item.datatype))].sort();
-            number_of_properties = p_response.length;
+            statusProperties = "done";
+            responseProperties = message.data.properties;
+            responseProperties = [...responseProperties].sort((a, b) => a.number - b.number);
+            datatypesProperties = [...new Set(responseProperties.map(item => item.datatype))].sort();
+            numberOfProperties = responseProperties.length;
+            connectedProperties = message.data.connected;
           }    
         }
       };
   
       ws.onclose = () => {
         console.log("WebSocket closed");
+        console.log(connectedProperties);
       };
     }
 
@@ -96,8 +98,8 @@
     });
 
 
-    let tabActive = "w-full h-full inline-block font-semibold text-center bg-accent-dark text-medium-light dark:bg-accent-dark dark:text-lighter-light";
-    let tabInactive = "w-full h-full inline-block font-medium text-center bg-darker-light text-darker-dark dark:bg-darker-dark dark:text-medium-light hover:font-bold";
+    let tabActive = "w-full h-full inline-block font-semibold text-lg text-center bg-accent-dark text-medium-light dark:bg-accent-dark dark:text-lighter-light";
+    let tabInactive = "w-full h-full inline-block font-medium text-lg text-center bg-darker-light text-darker-dark dark:bg-darker-dark dark:text-medium-light hover:font-bold";
 </script>
 
 
@@ -120,37 +122,38 @@
   
   <Tabs tabStyle="full" contentClass="p-4 bg-medium-light text-lighter-dark dark:bg-medium-dark dark:text-medium-light" defaultClass="flex divide-x divide-lighter-light dark:divide-lighter-dark h-10 ">
     <TabItem class="w-full " title="Informacje" activeClasses={tabActive} inactiveClasses={tabInactive} open>
-      {#if p_status === "waiting" || status === "waiting"}
-        <p class="font-bold"> <Spinner color="custom" customColor="fill-accent" bg="text-lighter-light dark:text-lighter-dark" size={6}/> Trwa pobieranie danych...</p>
+      {#if statusProperties === "waiting" || statusClasses === "waiting"}
+        <p class="font-bold text-lg"> <Spinner color="custom" customColor="fill-accent" bg="text-lighter-light dark:text-lighter-dark" size={6}/> Trwa pobieranie danych...</p>
       {/if}
-      <p>Adres instancji <a href={data.instance.url}>{data.instance.url}</a> </p>
-      <p>Liczba klas: {number_of_classes}</p>
-      <p>Liczba właściwości: {number_of_properties}</p>
+      <p class="text-lg">Adres instancji <a href={data.instance.url}>{data.instance.url}</a> </p>
+      <p class="text-lg">Liczba klas: {numberOfClasses}</p>
+      <p class="text-lg">Liczba właściwości: {numberOfProperties}</p>
     </TabItem>
     <TabItem class="w-full" title="Właściwości" activeClasses={tabActive} inactiveClasses={tabInactive} >
 
 
-        {#if p_status === "waiting"}
-          <p class="font-bold" > <Spinner color="custom" customColor="fill-accent" bg="text-lighter-light dark:text-lighter-dark" size={6}/> Trwa pobieranie danych...</p>
+        {#if statusProperties === "waiting"}
+          <p class="font-bold text-lg" > <Spinner color="custom" customColor="fill-accent" bg="text-lighter-light dark:text-lighter-dark" size={6}/> Trwa pobieranie danych...</p>
         {/if}
               
-        {#if p_status === "done"}
-          <Properties data={p_response} datatypes={datatypes} ></Properties>
+        {#if statusProperties === "done"}
+          <Properties data={responseProperties} datatypes={datatypesProperties} connected={connectedProperties} ></Properties>
         {/if}
 
     </TabItem>
     <TabItem class="w-full" title="Klasy" activeClasses={tabActive} inactiveClasses={tabInactive} >
-      {#if status === "waiting"}
-        <p class="font-bold" > <Spinner color="custom" customColor="fill-accent" bg="text-lighter-light dark:text-lighter-dark" size={6}/> Trwa pobieranie danych...</p>
+      {#if statusClasses === "waiting"}
+        <p class="font-bold text-lg" > <Spinner color="custom" customColor="fill-accent" bg="text-lighter-light dark:text-lighter-dark" size={6}/> Trwa pobieranie danych...</p>
       {/if}
             
-      {#if status === "done"}
+      {#if statusClasses === "done"}
         <ul>
-          {#each response as { link, id, label}}
-            <li><a class="font-bold" href={link}>{id}</a> {label}</li>
+          {#each responseClasses as { link, id, label}}
+            <li class="text-lg"><a class="font-bold" href={link}>{id}</a> {label}</li>
           {/each}
         </ul>
       {/if}
+
     </TabItem>
   </Tabs>
   

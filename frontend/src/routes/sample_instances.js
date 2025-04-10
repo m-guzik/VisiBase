@@ -15,5 +15,11 @@ export const instances = [
 		name: 'wikihum',
 		title: 'WikiHum',
 		url: 'https://wikihum.lab.dariah.pl',
+	},
+
+	{
+		name: 'factgrid',
+		title: 'FactGrid',
+		url: 'https://database.factgrid.de',
 	}
 ];

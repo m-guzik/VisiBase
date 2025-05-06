@@ -1,12 +1,12 @@
 <script lang="ts">
 
   import { onMount } from "svelte";
-  import { Button, Card, Input, Label } from 'flowbite-svelte';
+  import { Button, Card } from 'flowbite-svelte';
+  import InstanceInfoForm from "$lib/InstanceInfoForm.svelte";
 
   let { data } = $props();
   let apiData = [];
   const endpoint = "http://127.0.0.1:8000/";
-
 
   function handleClick(instanceName: { name: any; }) {
     window.location.href = "/examples/" + instanceName.name;
@@ -20,7 +20,7 @@
   });
 
 
-  let btnClass = "bg-accent-dark text-medium-light dark:bg-accent-dark hover:text-darker-dark hover:bg-accent-light dark:hover:bg-accent-light focus:ring-2 focus:ring-accent focus:outline-none dark:focus:ring-2 dark:focus:ring-accent dark:focus:outline-none m-2 w-md  text-lg";
+  let btnClass = "bg-accent-dark text-medium-light dark:bg-accent-dark hover:text-darker-dark hover:bg-accent-light dark:hover:bg-accent-light focus:ring-2 focus:ring-accent focus:outline-none dark:focus:ring-2 dark:focus:ring-accent dark:focus:outline-none mt-2 w-md  text-lg";
 
 </script>
 
@@ -28,28 +28,12 @@
 
 <!-- <h1 class="text-center">{apiData.message}</h1> -->
 
-
-
 <div class="grid grid-cols-1 md:grid-cols-2 place-items-center p-10">
   <Card class="bg-medium-light dark:bg-medium-dark rounded-md w-lg h-full flex flex-col" size="xl">
     <h5 class="text-3xl font-bold tracking-tight text-lighter-dark dark:text-darker-light text-center ">Podaj dane swojej instancji Wikibase</h5>
       
-    <form class="m-2">
-      <div>
-        <Label for="name" class="text-lighter-dark dark:text-darker-light text-left mt-2 text-lg">Nazwa</Label>
-        <Input type="text" id="name" placeholder="e.g. WikiHum" required/>
-      </div>
-      <div>
-        <Label for="api-address" class="text-lighter-dark dark:text-darker-light text-left mt-2 text-lg">Adres API</Label>
-        <Input type="text" id="api-address" placeholder="e.g. https://wikihum.lab.dariah.pl/api.php" required/>
-      </div>
-      <div>
-        <Label for="sparql-endpoint" class="text-lighter-dark dark:text-darker-light text-left mt-2 text-lg">SPARQL endpoint</Label>
-        <Input type="text" id="sparql-endpoint" placeholder="e.g. https://wikihum.lab.dariah.pl/bigdata/sparql" required/>
-      </div>
-    </form>
+    <InstanceInfoForm></InstanceInfoForm>
 
-    <Button class={btnClass}>Połącz</Button>
   </Card>
 
   <Card class="bg-medium-light dark:bg-medium-dark rounded-md text-center min-w-lg h-full flex flex-col ">

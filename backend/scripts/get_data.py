@@ -1,78 +1,119 @@
 from wikibaseintegrator import WikibaseIntegrator
 from wikibaseintegrator.wbi_config import config as wbi_config
-from wikibaseintegrator.wbi_helpers import execute_sparql_query
-
-from SPARQLWrapper import SPARQLWrapper, JSON
+from wikibaseintegrator.wbi_helpers import execute_sparql_query, search_entities
 
 import requests
 
 
+def prepare_entity_info(result: dict, variable_name: str) -> tuple[dict, str]:
+    entity_link =result[variable_name]["value"]
+    entity_id = result[variable_name]["value"].split("/")[-1]
+    entity_number = int(entity_id[1:]) 
+    variable_label_name = variable_name + "Label"
+    entity_label = result[variable_label_name]["value"]
+    entity_info = { "link" : entity_link, 
+                    "id" : entity_id,
+                    "number" : entity_number,
+                    "label" : entity_label }
+    return entity_info, entity_id
 
 
-def get_classes(request_id: str):
-    match request_id:
-        case "factgrid":
-            wbi_config['MEDIAWIKI_API_URL'] = 'https://database.factgrid.de/w/api.php' 
-            wbi_config['SPARQL_ENDPOINT_URL'] = 'https://database.factgrid.de/sparql' 
-            wbi_config['WIKIBASE_URL'] = 'https://database.factgrid.de' 
-            PID_INSTANCE_0F = " wdt:P2" 
-            PREFIX = "  "  
-        case "lexbib":
-            wbi_config['MEDIAWIKI_API_URL'] = 'https://lexbib.elex.is/w/api.php' 
-            wbi_config['SPARQL_ENDPOINT_URL'] = 'https://lexbib.elex.is/query/sparql' 
-            wbi_config['WIKIBASE_URL'] = 'https://lexbib.elex.is' 
-            PID_INSTANCE_0F = "ldp:P5" 
-            PREFIX = "PREFIX ldp: <https://lexbib.elex.is/prop/direct/>" 
-        case "qichwabase":
-            wbi_config['MEDIAWIKI_API_URL'] = 'https://qichwa.wikibase.cloud/w/api.php'
-            wbi_config['SPARQL_ENDPOINT_URL'] = 'https://qichwa.wikibase.cloud/query/sparql'
-            wbi_config['WIKIBASE_URL'] = 'https://qichwa.wikibase.cloud'
-            PID_INSTANCE_0F = "<https://qichwa.wikibase.cloud/prop/direct/P5>" 
-            PREFIX = " "
-        case "kul":
-            wbi_config['MEDIAWIKI_API_URL'] = 'https://va.wiki.kul.pl/w/api.php' 
-            wbi_config['SPARQL_ENDPOINT_URL'] = 'https://va.wiki.kul.pl/sparql' 
-            wbi_config['WIKIBASE_URL'] = 'https://va.wiki.kul.pl' 
-            PID_INSTANCE_0F = "wdt:P1" 
-            PREFIX = " "
-        case "wikibase-world":
-            wbi_config['MEDIAWIKI_API_URL'] = 'https://wikibase.world/w/api.php' 
-            wbi_config['SPARQL_ENDPOINT_URL'] = 'https://wikibase.world/query/sparql' 
-            wbi_config['WIKIBASE_URL'] = 'https://wikibase.world' 
-            PID_INSTANCE_0F = "wwdt:P3" 
-            PREFIX = " PREFIX wwdt: <https://wikibase.world/prop/direct/> "  
-        case "wikihum":
-            wbi_config['MEDIAWIKI_API_URL'] = 'https://wikihum.lab.dariah.pl/api.php' 
-            wbi_config['SPARQL_ENDPOINT_URL'] = 'https://wikihum.lab.dariah.pl/bigdata/sparql' 
-            wbi_config['WIKIBASE_URL'] = 'https://wikihum.lab.dariah.pl' 
-            PID_INSTANCE_0F = "wdt:P27" 
-            PREFIX = " "
-        # case "wikikul":
-        #     wbi_config['MEDIAWIKI_API_URL'] = 'https://wiki.kul.pl/w/api.php' 
-        #     wbi_config['SPARQL_ENDPOINT_URL'] = 'https://wiki.kul.pl/sparql' 
-        #     wbi_config['WIKIBASE_URL'] = 'https://wiki.kul.pl' 
-        #     PID_INSTANCE_0F = "wdt:P1" 
-        #     PREFIX = " "
+def get_classes_connected_by_property(property_id: str, property_label: str) -> tuple[list, list]:
+    classes = []
+    connections = []
+    classes_ids = set()
 
-    query =  PREFIX + """
-                SELECT DISTINCT ?instance ?instanceLabel WHERE {
-                    ?item """ + PID_INSTANCE_0F + """ ?instance .
-                    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-                }
-                """
+    query =  """
+        SELECT DISTINCT ?firstClass ?firstClassLabel ?secondClass ?secondClassLabel WHERE {
+            ?firstClass wdt:""" + property_id + """ ?secondClass .
+            SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+        } """
 
     results = execute_sparql_query(query)
-    classes = []
     for result in results["results"]["bindings"]:
-        class_link =result["instance"]["value"]
-        class_id = result["instance"]["value"].split("/")[-1]
-        class_number = int(class_id[1:]) 
-        class_label = result["instanceLabel"]["value"]
-        instance_class = { "link" : class_link, 
-                "id" : class_id,
-                "number" : class_number,
-                "label" : class_label }
-        classes.append(instance_class)
+        first_class, first_class_id = prepare_entity_info(result, "firstClass")
+        second_class, second_class_id = prepare_entity_info(result, "secondClass")
+
+        if first_class_id not in classes_ids:
+            classes.append(first_class)
+            classes_ids.add(first_class_id)
+
+        if second_class_id not in classes_ids:
+            classes.append(second_class)
+            classes_ids.add(second_class_id)
+        
+        connection_id = first_class_id + property_id + second_class_id
+        connections.append({'id': connection_id,
+                            'sourceId': first_class_id,
+                            'targetId': second_class_id,
+                            'label': property_label})
+
+    return classes, connections
+
+
+def get_classes(sparql_endpoint: str, wiki_url: str, api_endpoint: str):
+    wbi_config['MEDIAWIKI_API_URL'] = api_endpoint
+    wbi_config['SPARQL_ENDPOINT_URL'] = sparql_endpoint
+    wbi_config['WIKIBASE_URL'] = wiki_url
+    wbi_config['USER_AGENT'] = "VisiBase/0.1 (https://github.com/m-guzik/VisiBase)"
+
+    classes_ids = set()
+    classes = []
+    connections = []
+    pid_instance_of = search_entities(search_string="instance of", language="en", search_type="property") 
+    if len(pid_instance_of) > 0:
+        WDT_PREFIX = "<" + wiki_url + "/prop/direct/>"
+        query =   """
+                    PREFIX wdt: """ + WDT_PREFIX + """
+                    PREFIX wikibase: <http://wikiba.se/ontology#>
+                    PREFIX bd: <http://www.bigdata.com/rdf#>
+
+                    SELECT DISTINCT ?instance ?instanceLabel WHERE {
+                        ?item wdt:""" + pid_instance_of[0] + """ ?instance .
+                        SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+                    }
+                    """
+
+        results = execute_sparql_query(query)
+        for result in results["results"]["bindings"]:
+            class_link =result["instance"]["value"]
+            class_id = result["instance"]["value"].split("/")[-1]
+            class_number = int(class_id[1:]) 
+            class_label = result["instanceLabel"]["value"]
+            instance_class = { "link" : class_link, 
+                    "id" : class_id,
+                    "number" : class_number,
+                    "label" : class_label }
+            classes.append(instance_class)
+            classes_ids.add(class_id)
+
+    subclass_classes = []
+    subclass_connections = []
+    pid_subclass_of = search_entities(search_string="subclass of", language="en", search_type="property")
+    if len(pid_subclass_of) > 0:
+        subclass_classes, subclass_connections = get_classes_connected_by_property(pid_subclass_of[0], "subclass of")
+    
+    for connection in subclass_connections:
+        connections.append(connection)
+
+    for subclass_class in subclass_classes:
+        if subclass_class.get("id") not in classes_ids:
+            classes.append(subclass_class)
+            classes_ids.add(subclass_class.get("id"))
+
+    superclass_classes = []
+    superclass_connections = []
+    pid_superclass_of = search_entities(search_string="superclass of", language="en", search_type="property")
+    if len(pid_superclass_of) > 0:
+        superclass_classes, superclass_connections = get_classes_connected_by_property(pid_superclass_of[0], "superclass of")
+
+    for superclass_class in superclass_classes:
+        if superclass_class.get("id") not in classes_ids:
+            classes.append(superclass_class)
+            classes_ids.add(superclass_class.get("id"))
+    
+    for connection in superclass_connections:
+        connections.append(connection)
 
     return classes
 
@@ -80,7 +121,7 @@ def get_classes(request_id: str):
 
 
 
-def get_properties(sparql_endpoint: str, wiki_url: str):
+def get_properties(sparql_endpoint: str, wiki_url: str) -> tuple[list, list, list, list]:
     query = """
         PREFIX wikibase: <http://wikiba.se/ontology#>
         PREFIX bd: <http://www.bigdata.com/rdf#>
@@ -93,7 +134,7 @@ def get_properties(sparql_endpoint: str, wiki_url: str):
         """
 
     headers = {
-        "User-Agent": "WikibaseIntegrator/0.11 (https://github.com/LeMyst/WikibaseIntegrator)",
+        "User-Agent": "VisiBase/0.1 (https://github.com/m-guzik/VisiBase)",
         "Accept": "application/sparql-results+json"
     }
 
@@ -133,11 +174,6 @@ def get_properties(sparql_endpoint: str, wiki_url: str):
                     SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE], en" }
                 }
                 """
-
-                headers = {
-                    "User-Agent": "WikibaseIntegrator/0.11 (https://github.com/LeMyst/WikibaseIntegrator)",
-                    "Accept": "application/sparql-results+json"
-                }
 
                 response = requests.get(sparql_endpoint, params={"query": query}, headers=headers)
 
@@ -186,70 +222,6 @@ def get_properties(sparql_endpoint: str, wiki_url: str):
     else:
         print("Query failed:", response.status_code, response.text)
 
-
-
-
-    # user_agent = "WDQS-example Python/%s.%s" % (sys.version_info[0], sys.version_info[1])
-    # sparql = SPARQLWrapper(sparql_endpoint, agent=user_agent)
-
-    # sparql.setQuery("""
-    #             SELECT ?property ?propertyLabel ?datatype WHERE {
-    #                 ?property a wikibase:Property ;
-    #                             wikibase:propertyType ?datatype .
-    #                 SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE], en" }
-    #             } """)
-    # sparql.setReturnFormat(JSON)
-    # results = sparql.query().convert()
-
-    # properties = []
-    # connected_properties = []
-
-    # for result in results["results"]["bindings"]:
-    #     property_link =result["property"]["value"]
-    #     property_id = result["property"]["value"].split("/")[-1]
-    #     property_number = int(property_id[1:]) 
-    #     property_label = result["propertyLabel"]["value"]
-    #     property_datatype = result["datatype"]["value"].split("#")[-1]
-    #     prop = { "link" : property_link, 
-    #             "id" : property_id,
-    #             "number" : property_number,
-    #             "label" : property_label,
-    #             "datatype" : property_datatype }
-    #     properties.append(prop)
-    #     if property_datatype == "WikibaseProperty":
-    #         PROPERTY_ID = "<" + wiki_url + "/prop/direct/" + property_id + ">"
-    #         print("Property ID with prefix ", PROPERTY_ID)
-
-    #         query =  """
-    #                      SELECT ?property1 ?property1Label ?property2 ?property2Label WHERE {
-    #                      ?property1 """ + PROPERTY_ID + """ ?property2 .
-    #                      SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE], en" }
-    #                      } """
-    #         results = execute_sparql_query(query)
-    #         # sparql.setQuery("""
-    #         #             SELECT ?property1 ?property1Label ?property2 ?property2Label WHERE {
-    #         #             ?property1 """ + PROPERTY_ID + """ ?property2 .
-    #         #             SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE], en" }
-    #         #             } """)
-    #         # sparql.setReturnFormat(JSON)
-    #         # results = sparql.query().convert()
-    #         connecting_property = { 'id': property_id, 'link': property_link, 'label': property_label, 'connections': [] }
-    #         for result in results["results"]["bindings"]:
-    #             message = f"{result["property1"]["value"]} ↔ {result["property2"]["value"]}"
-    #             print(message)
-    #             from_property_link = result["property1"]["value"]
-    #             from_property_id = result["property1"]["value"].split("/")[-1]
-    #             from_property_label = result["property1Label"]["value"]
-    #             to_property_link = result["property2"]["value"]
-    #             to_property_id = result["property2"]["value"].split("/")[-1]
-    #             to_property_label = result["property2Label"]["value"]
-
-    #             if from_property_id.startswith('P') and to_property_id.startswith('P'):
-    #                 connection = { 'from_link': from_property_link, 'from_id': from_property_id, 'from_label': from_property_label,
-    #                                 'to_link': to_property_link, 'to_id': to_property_id, 'to_label': to_property_label }
-    #                 connecting_property["connections"].append(connection)
-    #         if len(connecting_property["connections"]) > 0:
-    #             connected_properties.append(connecting_property)
 
     return properties, connected_properties, edges, nodes
 

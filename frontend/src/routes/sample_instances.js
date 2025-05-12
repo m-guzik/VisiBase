@@ -4,20 +4,15 @@ export const instances = [
 		title: 'FactGrid',
 		url: 'https://database.factgrid.de',
 		sparql: 'https://database.factgrid.de/sparql',
+		api: 'https://database.factgrid.de/w/api.php'
 	}, 
-
-	{
-		name: 'lexbib',
-		title: 'LexBib',
-		url: 'https://lexbib.elex.is',
-		sparql: 'https://lexbib.elex.is/query/sparql',
-	},
 	
 	{
 		name: 'qichwabase',
 		title: 'Qichwabase',
 		url: 'https://qichwa.wikibase.cloud',
 		sparql: 'https://qichwa.wikibase.cloud/query/sparql',
+		api: 'https://qichwa.wikibase.cloud/w/api.php'
 	},
 	
 	{
@@ -25,6 +20,7 @@ export const instances = [
 		title: 'VA KUL',
 		url: 'https://va.wiki.kul.pl',
 		sparql: 'https://va.wiki.kul.pl/sparql',
+		api: 'https://va.wiki.kul.pl/w/api.php'
 	},
 
 	{
@@ -32,6 +28,7 @@ export const instances = [
 		title: 'Wikibase World',
 		url: 'https://wikibase.world',
 		sparql: 'https://wikibase.world/query/sparql',
+		api: 'https://wikibase.world/w/api.php'
 	},
 
 	{
@@ -39,6 +36,7 @@ export const instances = [
 		title: 'WikiHum',
 		url: 'https://wikihum.lab.dariah.pl',
 		sparql: 'https://wikihum.lab.dariah.pl/bigdata/sparql',
+		api: 'https://wikihum.lab.dariah.pl/api.php'
 	}
 	
 	//,
@@ -47,6 +45,7 @@ export const instances = [
 	// 	title: 'WikiKUL',
 	// 	url: 'https://wiki.kul.pl',
 	// 	sparql: 'https://wiki.kul.pl/sparql',
+	//	api: 'https://wiki.kul.pl/w/api.php'
 	// }
 
 ];

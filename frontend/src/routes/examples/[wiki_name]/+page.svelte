@@ -30,6 +30,7 @@
     let requestId = data.instance.name;
     let wikiURL = data.instance.url;
     let sparqlEndpoint = data.instance.sparql;
+    let apiEndpoint = data.instance.api;
 
     let statusClasses = $state("waiting");
     let responseClasses : ClassItem[] = $state([]);
@@ -47,6 +48,14 @@
 
     function startClassesWebSocket() {
       const ws = new WebSocket(`http://0.0.0.0:8000/ws/classes/${requestId}`);
+      
+      ws.onopen = () => {
+        ws.send(JSON.stringify({
+          wiki_url: wikiURL,
+          sparql_endpoint: sparqlEndpoint,
+          api_endpoint: apiEndpoint,     
+        }));
+      };
   
       ws.onmessage = (event) => {
         if (event.data == "Processing started..."){

@@ -26,7 +26,7 @@
     }
 
 
-    let { data, datatypes, connected } = $props();
+    let { data, datatypes, connected, onSelect } = $props();
 
     let selectedDatatypes : string = $state("");
     let filteredProperties : PropertyItem[] = $state(data);
@@ -58,7 +58,7 @@
 
     <ul class="mt-4">
         {#each filteredProperties as { link, id, label }}
-          <li class="text-lg"><a class="font-bold" href={link}>{id}</a> {label}</li>
+          <li class="text-lg"><a class="font-bold" href={link}>{id}</a><button onclick={() => onSelect(id)}>{label}</button></li>
         {/each}
     </ul>
 

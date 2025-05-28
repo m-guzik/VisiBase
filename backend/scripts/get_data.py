@@ -84,8 +84,8 @@ def get_classes(sparql_endpoint: str, wiki_url: str, api_endpoint: str):
                     "id" : class_id,
                     "number" : class_number,
                     "label" : class_label }
-            classes.append(instance_class)
             classes_ids.add(class_id)
+            classes.append(instance_class)
 
     subclass_classes = []
     subclass_connections = []
@@ -107,21 +107,29 @@ def get_classes(sparql_endpoint: str, wiki_url: str, api_endpoint: str):
     if len(pid_superclass_of) > 0:
         superclass_classes, superclass_connections = get_classes_connected_by_property(pid_superclass_of[0], "superclass of")
 
+    for connection in superclass_connections:
+        connections.append(connection)
+
     for superclass_class in superclass_classes:
         if superclass_class.get("id") not in classes_ids:
             classes.append(superclass_class)
             classes_ids.add(superclass_class.get("id"))
     
-    for connection in superclass_connections:
-        connections.append(connection)
+    edges = connections
+    nodes = classes
 
-    return classes
+    return classes, edges, nodes
 
 
 
 
 
 def get_properties(sparql_endpoint: str, wiki_url: str) -> tuple[list, list, list, list]:
+    wbi_config['SPARQL_ENDPOINT_URL'] = sparql_endpoint
+    wbi_config['WIKIBASE_URL'] = wiki_url
+    wbi_config['USER_AGENT'] = "VisiBase/0.1 (https://github.com/m-guzik/VisiBase)"
+
+    
     query = """
         PREFIX wikibase: <http://wikiba.se/ontology#>
         PREFIX bd: <http://www.bigdata.com/rdf#>

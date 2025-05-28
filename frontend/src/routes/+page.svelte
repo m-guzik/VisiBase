@@ -8,10 +8,9 @@
   let apiData = [];
   const endpoint = "http://127.0.0.1:8000/";
 
-  function handleClick(instanceName: { name: any; }) {
-    window.location.href = "/examples/" + instanceName.name;
+  function handleClick(instanceName: { page: any; }) {
+    window.location.href = "/examples/" + instanceName.page;
   }
-
 
   onMount(async function () {
     const response = await fetch(endpoint);
@@ -20,10 +19,9 @@
   });
 
 
-  let btnClass = "bg-accent-dark text-medium-light dark:bg-accent-dark hover:text-darker-dark hover:bg-accent-light dark:hover:bg-accent-light focus:ring-2 focus:ring-accent focus:outline-none dark:focus:ring-2 dark:focus:ring-accent dark:focus:outline-none mt-2 w-md  text-lg";
+  let btnClass = "bg-accent-dark text-medium-light dark:bg-accent-dark hover:text-darker-dark hover:bg-accent-light dark:hover:bg-accent-light focus:ring-2 focus:ring-accent focus:outline-none dark:focus:ring-2 dark:focus:ring-accent dark:focus:outline-none mt-4 w-md  text-lg";
 
 </script>
-
 
 
 <!-- <h1 class="text-center">{apiData.message}</h1> -->
@@ -40,10 +38,9 @@
     <h5 class="text-3xl font-bold tracking-tight text-lighter-dark dark:text-darker-light text-center">Wybierz przykład z listy</h5>
     <div class="m-auto">
       <ul>
-        {#each data.samples as {name, title} }
+        {#each data.samples as {page, name} }
           <li>
-            <!-- <a href="/examples/{name}"><Button class={btnClass} >{title}</Button></a> -->
-            <Button class={btnClass} on:click={() => {handleClick({name})}}>{title}</Button>
+            <Button class={btnClass} on:click={() => {handleClick({page})}}>{name}</Button>
           </li>
         {/each}
       </ul>

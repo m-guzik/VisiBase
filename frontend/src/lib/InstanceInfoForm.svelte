@@ -9,7 +9,7 @@
 
     async function handleSubmit(event: Event) {
       event.preventDefault();
-      goto(`/${name}?endpoint=${encodeURIComponent(sparqlEndpoint)}&url=${encodeURIComponent(url)}`);
+      goto(`/${name}?endpoint=${encodeURIComponent(sparqlEndpoint)}&url=${encodeURIComponent(url)}&api=${encodeURIComponent(apiAddress)}`);
     }
 
     let btnClass = "bg-accent-dark text-medium-light dark:bg-accent-dark hover:text-darker-dark hover:bg-accent-light dark:hover:bg-accent-light focus:ring-2 focus:ring-accent focus:outline-none dark:focus:ring-2 dark:focus:ring-accent dark:focus:outline-none mt-4 w-md text-lg";
@@ -23,17 +23,17 @@
       <Label for="name" class="text-lighter-dark dark:text-darker-light text-left mt-2 text-lg">Nazwa</Label>
       <Input type="text" id="name" placeholder="e.g. WikiHum" bind:value={name} required/>
     </div>
-    <!-- <div>
-      <Label for="api-address" class="text-lighter-dark dark:text-darker-light text-left mt-2 text-lg">Adres API</Label>
-      <Input type="text" id="api-address" placeholder="e.g. https://wikihum.lab.dariah.pl/api.php" bind:value={apiAddress}  required/>
-    </div> -->
     <div>
       <Label for="url" class="text-lighter-dark dark:text-darker-light text-left mt-2 text-lg">Adres instancji</Label>
-      <Input type="text" id="url" placeholder="e.g. https://wikihum.lab.dariah.pl" bind:value={url}  required/>
+      <Input type="text" id="url" placeholder="np. https://wikihum.lab.dariah.pl" bind:value={url}  required/>
     </div>
     <div>
       <Label for="sparql-endpoint" class="text-lighter-dark dark:text-darker-light text-left mt-2 text-lg">SPARQL endpoint</Label>
       <Input type="text" id="sparql-endpoint" placeholder="e.g. https://wikihum.lab.dariah.pl/bigdata/sparql" bind:value={sparqlEndpoint}  required/>
+    </div>
+    <div>
+      <Label for="api-endpoint" class="text-lighter-dark dark:text-darker-light text-left mt-2 text-lg">Adres API</Label>
+      <Input type="text" id="api-endpoint" placeholder="e.g. https://wikihum.lab.dariah.pl/api.php" bind:value={apiAddress}  required/>
     </div>
     <Button class={btnClass} type="submit">Połącz</Button>
   </form>

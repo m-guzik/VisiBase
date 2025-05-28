@@ -19,8 +19,9 @@ class PropertiesData(BaseModel):
 connections = {}
 
 async def process_classes_data(request_id: str, websocket: WebSocket, sparql_endpoint: str, wiki_url: str, api_endpoint:str):
-    classes_data = get_data.get_classes(sparql_endpoint, wiki_url, api_endpoint)
-    await websocket.send_json({"status": "done", "request_id": request_id, "data": classes_data})
+    classes_data, edges, nodes = get_data.get_classes(sparql_endpoint, wiki_url, api_endpoint)
+    data = {"classes": classes_data, "edges": edges, "nodes": nodes}
+    await websocket.send_json({"status": "done", "request_id": request_id, "data": data})
     await websocket.close()
 
 async def process_properties_data(request_id: str, websocket: WebSocket, sparql_endpoint: str, wiki_url: str):

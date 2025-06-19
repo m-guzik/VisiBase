@@ -36,7 +36,6 @@
 		return data;
 	});
 
-    // let connectedEntries = Object.entries(connected).values;
 
     function filterData() {
         filteredProperties = selectedDatatypes
@@ -64,15 +63,17 @@
 
 
 
-    <p class="font-bold text-lg mt-10">Zależności pomiędzy właściwościami</p>
-    <ul>
-        {#each connectedProperties as connectingP}
-        <li class="text-lg mt-4"><a class="font-bold" href={connectingP.link}>{connectingP.id}</a> {connectingP.label}</li>
-            {#each connectingP.connections as connected}
-                <li class="ml-4"><a class="font-bold" href={connected.from_link}>{connected.from_id}</a> {connected.from_label} - 
-                    <a class="font-bold" href={connected.to_link}>{connected.to_id}</a> {connected.to_label}</li>
+    {#if connectedProperties.length > 0 }
+        <p class="font-bold text-lg mt-10">Zależności pomiędzy właściwościami</p>
+        <ul>
+            {#each connectedProperties as connectingP}
+            <li class="text-lg mt-4"><a class="font-bold" href={connectingP.link}>{connectingP.id}</a> {connectingP.label}</li>
+                {#each connectingP.connections as connected}
+                    <li class="ml-4"><a class="font-bold" href={connected.from_link}>{connected.from_id}</a> {connected.from_label} - 
+                        <a class="font-bold" href={connected.to_link}>{connected.to_id}</a> {connected.to_label}</li>
+                {/each}
             {/each}
-        {/each}
-    </ul>
+        </ul>
+    {/if}
 </div>
 

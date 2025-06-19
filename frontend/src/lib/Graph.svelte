@@ -10,9 +10,15 @@
     let container: HTMLElement;
     let cy: any;
     let graphData: { nodes: any[], edges: any[] } = { nodes: [], edges: [] };
-  
+
     let visibleLabels = new Set(edgeLabels);
 
+    if(edgeLabels.indexOf('subclass of') > -1 && edgeLabels.indexOf('superclass of') > -1){
+      visibleLabels.clear;
+      visibleLabels.add('subclass of');
+      visibleLabels.add('superclass of');
+    };
+  
 
     onMount(() => {
       initializeGraph();
@@ -58,7 +64,7 @@
               'text-halign': 'center',
               'text-wrap': 'wrap',
               'text-max-width': '100px',
-              'width': '80px',
+              'width': '100px',
               'height': '40px',
               'padding': '10px',
               'font-size': '12px',
@@ -92,17 +98,21 @@
           }
         ],
         layout: {
-            name: 'cose',
-            animate: false,
-            nodeOverlap: 20,
-            idealEdgeLength: () => 100,
-            nodeRepulsion: () => 400000,
-            edgeElasticity: () => 100,
-            nestingFactor: 5,
-            gravity: 80,
-            numIter: 1000,
-            fit: true,
-            padding: 30
+          // name: 'concentric'
+          // name: 'breadthfirst'
+          // name: 'circle'
+          // name: 'grid'
+          name: 'cose',
+          animate: false,
+          nodeOverlap: 20,
+          idealEdgeLength: () => 100,
+          nodeRepulsion: () => 400000,
+          edgeElasticity: () => 100,
+          nestingFactor: 5,
+          gravity: 80,
+          numIter: 1000,
+          fit: true,
+          padding: 30
         }
       });
   
@@ -153,17 +163,28 @@
       });
     }
 
+    function recenter(){
+      if (cy) {
+        cy.fit(undefined, 40);
+        cy.zoom({lever : 1});
+        cy.nodes().removeClass('highlighted');
+      }
+    }
+
   </script>
 
 
   <div class="border-2 rounded overflow-hidden relative border-solid border-darker-light dark:border-lighter-dark" bind:this={container} style="height: {height}; width: {width};">
-    <div class="absolute mt-2 ml-2 p-2 border border-solid border-lighter-light dark:border-lighter-dark bg-darker-light dark:bg-darker-dark z-10">
-      {#each edgeLabels as label}
-        <label class="text-lighter-dark dark:text-medium-light ">
-          <input type="checkbox" checked={visibleLabels.has(label)} onchange={() => toggleLabel(label)}/>
-          Krawędzie "{label}"
-        </label><br />
-      {/each}
+    <div class="absolute z-10"> 
+      <div class="mt-2 ml-2 p-2 border border-solid border-accent-dark bg-darker-light dark:bg-lighter-dark w-50">
+        {#each edgeLabels as label}
+          <label class="text-lighter-dark dark:text-darker-light ">
+            <input type="checkbox" checked={visibleLabels.has(label)} onchange={() => toggleLabel(label)}/>
+            {label}
+          </label><br />
+        {/each}
+      </div>
+      <button class="ml-2 p-2 border border-solid border-accent-dark text-darker-light dark:text-darker-dark bg-lighter-dark dark:bg-darker-light hover:font-semibold w-50" onclick={recenter}>Zresetuj wizualizację</button>
     </div>
   </div>
   

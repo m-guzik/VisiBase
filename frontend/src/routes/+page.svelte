@@ -19,7 +19,7 @@
   });
 
 
-  let btnClass = "bg-accent-dark text-medium-light dark:bg-accent-dark hover:text-darker-dark hover:bg-accent-light dark:hover:bg-accent-light focus:ring-2 focus:ring-accent focus:outline-none dark:focus:ring-2 dark:focus:ring-accent dark:focus:outline-none mt-4 w-md  text-lg";
+  let btnClass = "bg-accent-dark text-medium-light dark:bg-accent-dark hover:text-darker-dark hover:bg-accent-light dark:hover:bg-accent-light focus:ring-2 focus:ring-lighter-dark focus:outline-none dark:focus:ring-2 dark:focus:ring-darker-light dark:focus:outline-none mt-4 w-md text-lg";
 
 </script>
 

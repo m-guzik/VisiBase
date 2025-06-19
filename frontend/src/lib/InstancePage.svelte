@@ -30,13 +30,15 @@
     let responseClasses : ClassItem[] = $state([]);
     let edgesClasses: string[] = $state([]);
     let nodesClasses: string[] = $state([]);
+    let classEdgeLabels: string[] = $state([]);
 
     let statusProperties = $state("waiting");
     let responseProperties : PropertyItem[] = $state([]);
     let datatypesProperties: string[] = $state([]);
     let edgesProperties: string[] = $state([]);
     let nodesProperties: string[] = $state([]);
-    let connectedProperties : {} = $state({});
+    let connectedProperties : string[] = $state([]);
+    let propertyEdgeLabels: string[] = $state([]);
 
     let numberOfClasses : number = $state(0);
     let numberOfProperties : number = $state(0);
@@ -78,6 +80,7 @@
             responseClasses = message.data.classes;
             edgesClasses = message.data.edges;
             nodesClasses = message.data.nodes;
+            classEdgeLabels = message.data.labels;
             responseClasses = [...responseClasses].sort((a, b) => a.number - b.number);
             numberOfClasses = responseClasses.length;
           }    
@@ -116,6 +119,7 @@
             connectedProperties = message.data.connected;
             edgesProperties = message.data.edges;
             nodesProperties = message.data.nodes;
+            propertyEdgeLabels = message.data.labels;
           }    
         }
       };
@@ -165,9 +169,11 @@
         {/if}
               
         {#if statusProperties === "done"}
-          <div class="container mx-auto p-4">
-            <Graph edges={edgesProperties} nodes={nodesProperties} edgeLabels={["inverse property", "subproperty of", "related property"]} selectedNode={selectedPropertyId}/>
-          </div>
+          {#if connectedProperties.length > 0 }
+            <div class="container mx-auto p-4">
+              <Graph edges={edgesProperties} nodes={nodesProperties} edgeLabels={propertyEdgeLabels} selectedNode={selectedPropertyId}/>
+            </div>
+          {/if}
           <Properties data={responseProperties} datatypes={datatypesProperties} connected={connectedProperties} onSelect={handlePropertySelect}></Properties>
         {/if}
 
@@ -179,7 +185,7 @@
             
       {#if statusClasses === "done"}
           <div class="container mx-auto p-4">
-            <Graph edges={edgesClasses} nodes={nodesClasses} edgeLabels={["subclass of", "superclass of"]} selectedNode={selectedClassId}/>
+            <Graph edges={edgesClasses} nodes={nodesClasses} edgeLabels={classEdgeLabels} selectedNode={selectedClassId}/>
           </div>
           <Classes data={responseClasses} connected={responseClasses} onSelect={handleClassSelect}></Classes>
       {/if}

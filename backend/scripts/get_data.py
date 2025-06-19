@@ -57,9 +57,13 @@ def get_classes(sparql_endpoint: str, wiki_url: str, api_endpoint: str):
     wbi_config['WIKIBASE_URL'] = wiki_url
     wbi_config['USER_AGENT'] = "VisiBase/0.1 (https://github.com/m-guzik/VisiBase)"
 
+    wbi = WikibaseIntegrator()
+
     classes_ids = set()
+    properties_ids = set()
     classes = []
     connections = []
+    properties_labels = []
     pid_instance_of = search_entities(search_string="instance of", language="en", search_type="property") 
     if len(pid_instance_of) > 0:
         WDT_PREFIX = "<" + wiki_url + "/prop/direct/>"
@@ -89,9 +93,13 @@ def get_classes(sparql_endpoint: str, wiki_url: str, api_endpoint: str):
 
     subclass_classes = []
     subclass_connections = []
-    pid_subclass_of = search_entities(search_string="subclass of", language="en", search_type="property")
-    if len(pid_subclass_of) > 0:
-        subclass_classes, subclass_connections = get_classes_connected_by_property(pid_subclass_of[0], "subclass of")
+    pid_subclass_of = ''
+    pid_subclass_of_search = search_entities(search_string="subclass of", language="en", search_type="property")
+    if len(pid_subclass_of_search) > 0:
+        pid_subclass_of = pid_subclass_of_search[0]
+        properties_ids.add(pid_subclass_of)
+        properties_labels.append("subclass of")
+        subclass_classes, subclass_connections = get_classes_connected_by_property(pid_subclass_of_search[0], "subclass of")
     
     for connection in subclass_connections:
         connections.append(connection)
@@ -103,9 +111,13 @@ def get_classes(sparql_endpoint: str, wiki_url: str, api_endpoint: str):
 
     superclass_classes = []
     superclass_connections = []
-    pid_superclass_of = search_entities(search_string="superclass of", language="en", search_type="property")
-    if len(pid_superclass_of) > 0:
-        superclass_classes, superclass_connections = get_classes_connected_by_property(pid_superclass_of[0], "superclass of")
+    pid_superclass_of = ''
+    pid_superclass_of_search = search_entities(search_string="superclass of", language="en", search_type="property")
+    if len(pid_superclass_of_search) > 0:
+        pid_superclass_of = pid_superclass_of_search[0]
+        properties_ids.add(pid_superclass_of)
+        properties_labels.append("superclass of")
+        superclass_classes, superclass_connections = get_classes_connected_by_property(pid_superclass_of_search[0], "superclass of")
 
     for connection in superclass_connections:
         connections.append(connection)
@@ -114,11 +126,29 @@ def get_classes(sparql_endpoint: str, wiki_url: str, api_endpoint: str):
         if superclass_class.get("id") not in classes_ids:
             classes.append(superclass_class)
             classes_ids.add(superclass_class.get("id"))
+
+    for class_id in classes_ids:
+        class_item = wbi.item.get(entity_id=class_id)
+        for claim in class_item.claims:
+            if claim.mainsnak.datatype == "wikibase-item":
+                value_id = claim.mainsnak.datavalue["value"]["id"]
+                property_id = claim.mainsnak.property_number
+                if value_id in classes_ids and property_id != pid_subclass_of and property_id != pid_superclass_of:
+                    property_entity = wbi.property.get(entity_id=property_id)
+                    property_label = property_entity.labels.get('en').value
+                    if property_id not in properties_ids:
+                        properties_ids.add(property_id)
+                        properties_labels.append(property_label)
+                    connection_id = class_id + property_id + value_id
+                    connections.append({'id': connection_id,
+                                        'sourceId': class_id,
+                                        'targetId': value_id,
+                                        'label': property_label})
     
     edges = connections
     nodes = classes
 
-    return classes, edges, nodes
+    return classes, edges, nodes, properties_labels
 
 
 
@@ -150,6 +180,8 @@ def get_properties(sparql_endpoint: str, wiki_url: str) -> tuple[list, list, lis
 
     properties = []
     connected_properties = []
+    edges_labels = []
+    edges_ids = set()
 
     nodes = []
     edges = []
@@ -201,6 +233,10 @@ def get_properties(sparql_endpoint: str, wiki_url: str) -> tuple[list, list, lis
                             connection = { 'from_link': from_property_link, 'from_id': from_property_id, 'from_label': from_property_label,
                                             'to_link': to_property_link, 'to_id': to_property_id, 'to_label': to_property_label }
                             connecting_property["connections"].append(connection)
+                            if property_id not in edges_ids:
+                                edges_ids.add(property_id)
+                                edges_labels.append(property_label)
+
                             if from_property_id not in node_ids:
                                 nodes.append({
                                 'id': from_property_id,
@@ -231,5 +267,5 @@ def get_properties(sparql_endpoint: str, wiki_url: str) -> tuple[list, list, lis
         print("Query failed:", response.status_code, response.text)
 
 
-    return properties, connected_properties, edges, nodes
+    return properties, connected_properties, edges, nodes, edges_labels
 

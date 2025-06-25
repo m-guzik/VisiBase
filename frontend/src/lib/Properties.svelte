@@ -1,6 +1,9 @@
 <script lang="ts">  
 
+    import { onMount } from "svelte";
     import { Select } from 'flowbite-svelte';
+
+    import Graph from "$lib/Graph.svelte";
 
     interface PropertyItem { 
         "link" : string,
@@ -15,52 +18,77 @@
             'from_label': string,
             'to_link': string, 
             'to_id': string, 
-            'to_label': string
-    }
+            'to_label': string }
 
     interface ConnectingProperty {
         "id" : string,
         'link': string,
         'label': string,
-        'connections': ConnectedProperties[]
+        'connections': ConnectedProperties[] }
+
+
+    let { data } = $props();
+
+    let allProperties : PropertyItem[] = $state([]);
+    let datatypes: string[] = $state([]);
+    let nodes: string[] = $state([]);
+    let edges: string[] = $state([]);
+    let edgeLabels: string[] = $state([]);
+    let connectedProperties: ConnectingProperty[] = $state([]);
+    let filteredProperties : PropertyItem[] = $state([]);
+
+    let propertyToHighlight : string = $state("");
+    let selectedDatatype : string = $state("");
+
+    function initializeVariables(){
+        allProperties = data.properties;
+        allProperties = [...allProperties].sort((a, b) => a.number - b.number);
+        datatypes = [...new Set(allProperties.map(item => item.datatype))].sort();
+        nodes = data.nodes;
+        edges = data.edges;
+        edgeLabels = data.labels;
+        connectedProperties = data.connected;
+        filteredProperties = allProperties;
     }
 
-
-    let { data, datatypes, connected, onSelect } = $props();
-
-    let selectedDatatypes : string = $state("");
-    let filteredProperties : PropertyItem[] = $state(data);
-    let connectedProperties: ConnectingProperty[] = $state(connected);;
-
-    let response= $derived.by(() => {
-		return data;
-	});
-
-
     function filterData() {
-        filteredProperties = selectedDatatypes
-      ? response.filter((item: { datatype: string; }) => item.datatype === selectedDatatypes)
-      : response;
-  }
+        filteredProperties = selectedDatatype
+      ? allProperties.filter((item: { datatype: string; }) => item.datatype === selectedDatatype) : allProperties;
+    }
+
+    function highlightNode(id: string) {
+      propertyToHighlight = id;
+    }
+  
+    onMount(() => {
+      initializeVariables();
+    });
 
 </script>
 
 
 
 <div >
-    <Select bind:value={selectedDatatypes} on:change={filterData} size="md" placeholder="Wybierz typ danych" class="text-lg">
+    {#if connectedProperties.length > 0 }
+        <div class="container mx-auto p-4">
+          <Graph edges={edges} nodes={nodes} edgeLabels={edgeLabels} highlightedNode={propertyToHighlight}/>
+        </div>
+    {/if}
+
+
+    <Select bind:value={selectedDatatype} on:change={filterData} size="md" placeholder="Wybierz typ danych" class="text-lg">
         <option value="" class="text-lg">Wszystkie typy danych</option>
         {#each datatypes as datatype}
           <option value={datatype} class="text-lg">{datatype}</option>
         {/each}
     </Select>
 
+
     <ul class="mt-4">
         {#each filteredProperties as { link, id, label }}
-          <li class="text-lg"><a class="font-bold" href={link}>{id}</a><button onclick={() => onSelect(id)}>{label}</button></li>
+          <li class="text-lg"><a class="font-bold" href={link}>{id}</a><button onclick={() => highlightNode(id)}>{label}</button></li>
         {/each}
     </ul>
-
 
 
     {#if connectedProperties.length > 0 }

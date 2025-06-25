@@ -4,57 +4,49 @@
     import { Card, Spinner, Tabs, TabItem, Tooltip } from 'flowbite-svelte';
     import { ArrowRightOutline } from 'flowbite-svelte-icons';
 
-    import Classes from '$lib/Classes.svelte';
     import Properties from '$lib/Properties.svelte';
-    import Graph from "$lib/Graph.svelte";
-
-
-    interface ClassItem { 
-      "link" : string,
-      "id" : string,
-      "number" : number,
-      "label" : string }
-
-
-    interface PropertyItem { 
-      "link" : string,
-      "id" : string,
-      "number" : number,
-      "label" : string,
-      "datatype" : string }
+    import Classes from '$lib/Classes.svelte';
 
 
     let { instanceName, wikiURL, sparqlEndpoint, apiEndpoint } = $props();
 
-    let statusClasses = $state("waiting");
-    let responseClasses : ClassItem[] = $state([]);
-    let edgesClasses: string[] = $state([]);
-    let nodesClasses: string[] = $state([]);
-    let classEdgeLabels: string[] = $state([]);
-
     let statusProperties = $state("waiting");
-    let responseProperties : PropertyItem[] = $state([]);
-    let datatypesProperties: string[] = $state([]);
-    let edgesProperties: string[] = $state([]);
-    let nodesProperties: string[] = $state([]);
-    let connectedProperties : string[] = $state([]);
-    let propertyEdgeLabels: string[] = $state([]);
-
-    let numberOfClasses : number = $state(0);
+    let propertiesData = $state();
     let numberOfProperties : number = $state(0);
 
-    let selectedClassId : string = $state('');
-    let selectedPropertyId : string = $state('');
+    let statusClasses = $state("waiting");
+    let classesData = $state();
+    let numberOfClasses : number = $state(0);
 
-    function handleClassSelect(id: string) {
-      selectedClassId = id;
+
+    function startPropertiesWebSocket() {
+      const ws = new WebSocket(`http://0.0.0.0:8000/ws/properties/${instanceName}`);
+  
+      ws.onopen = () => {
+        ws.send(JSON.stringify({
+          wiki_url: wikiURL,
+          sparql_endpoint: sparqlEndpoint,       
+        }));
+      };
+
+      ws.onmessage = (event) => {
+        if (event.data == "Processing started..."){
+          console.log(event);
+        } else {
+          const message = JSON.parse(event.data);
+          if (message.status === "done") {
+            console.log(event);
+            statusProperties = "done";
+            propertiesData = message.data
+            numberOfProperties = message.data.properties.length;
+          }    
+        }
+      };
+  
+      ws.onclose = () => {
+        console.log("Properties webSocket closed");
+      };
     }
-
-    function handlePropertySelect(id: string) {
-      selectedPropertyId = id;
-    }
-
-
 
     function startClassesWebSocket() {
       const ws = new WebSocket(`http://0.0.0.0:8000/ws/classes/${instanceName}`);
@@ -71,74 +63,32 @@
         if (event.data == "Processing started..."){
           console.log(event);
         } else {
-
           const message = JSON.parse(event.data);
 
           if (message.status === "done") {
             console.log(event);
             statusClasses = "done";
-            responseClasses = message.data.classes;
-            edgesClasses = message.data.edges;
-            nodesClasses = message.data.nodes;
-            classEdgeLabels = message.data.labels;
-            responseClasses = [...responseClasses].sort((a, b) => a.number - b.number);
-            numberOfClasses = responseClasses.length;
+            classesData = message.data;
+            numberOfClasses = message.data.classes.length;
           }    
         }
       };
   
       ws.onclose = () => {
-        console.log("WebSocket closed");
-      };
-    }
-
-    function startPropertiesWebSocket() {
-      const ws = new WebSocket(`http://0.0.0.0:8000/ws/properties/${instanceName}`);
-  
-      ws.onopen = () => {
-        ws.send(JSON.stringify({
-          wiki_url: wikiURL,
-          sparql_endpoint: sparqlEndpoint,       
-        }));
-      };
-
-      ws.onmessage = (event) => {
-        if (event.data == "Processing started..."){
-          console.log(event);
-        } else {
-
-          const message = JSON.parse(event.data);
-
-          if (message.status === "done") {
-            console.log(event);
-            statusProperties = "done";
-            responseProperties = message.data.properties;
-            responseProperties = [...responseProperties].sort((a, b) => a.number - b.number);
-            datatypesProperties = [...new Set(responseProperties.map(item => item.datatype))].sort();
-            numberOfProperties = responseProperties.length;
-            connectedProperties = message.data.connected;
-            edgesProperties = message.data.edges;
-            nodesProperties = message.data.nodes;
-            propertyEdgeLabels = message.data.labels;
-          }    
-        }
-      };
-  
-      ws.onclose = () => {
-        console.log("WebSocket closed");
-        console.log(connectedProperties);
+        console.log("Class webSocket closed");
       };
     }
   
     onMount(() => {
-      startClassesWebSocket();
       startPropertiesWebSocket();
+      startClassesWebSocket();
     });
 
 
     let tabActive = "w-full h-full inline-block font-semibold text-lg text-center bg-accent-dark text-medium-light dark:bg-accent-dark dark:text-lighter-light";
     let tabInactive = "w-full h-full inline-block font-medium text-lg text-center bg-darker-light text-darker-dark dark:bg-darker-dark dark:text-medium-light hover:font-bold";
 </script>
+
 
 <div class="m-4">
 
@@ -150,8 +100,6 @@
     </div>
   </Card>
 
-  
-  
   <Tabs tabStyle="full" contentClass="p-4 bg-medium-light text-lighter-dark dark:bg-medium-dark dark:text-medium-light" defaultClass="flex divide-x divide-lighter-light dark:divide-lighter-dark h-10 ">
     <TabItem class="w-full " title="Informacje" activeClasses={tabActive} inactiveClasses={tabInactive} open>
       {#if statusProperties === "waiting" || statusClasses === "waiting"}
@@ -162,37 +110,22 @@
       <p class="text-lg">Liczba właściwości: {numberOfProperties}</p>
     </TabItem>
     <TabItem class="w-full" title="Właściwości" activeClasses={tabActive} inactiveClasses={tabInactive} >
-
-
         {#if statusProperties === "waiting"}
           <p class="font-bold text-lg" > <Spinner color="custom" customColor="fill-accent" bg="text-lighter-light dark:text-lighter-dark" size={6}/> Trwa pobieranie danych...</p>
         {/if}
-              
         {#if statusProperties === "done"}
-          {#if connectedProperties.length > 0 }
-            <div class="container mx-auto p-4">
-              <Graph edges={edgesProperties} nodes={nodesProperties} edgeLabels={propertyEdgeLabels} selectedNode={selectedPropertyId}/>
-            </div>
-          {/if}
-          <Properties data={responseProperties} datatypes={datatypesProperties} connected={connectedProperties} onSelect={handlePropertySelect}></Properties>
+          <Properties data={propertiesData} ></Properties>
         {/if}
-
     </TabItem>
     <TabItem class="w-full" title="Klasy" activeClasses={tabActive} inactiveClasses={tabInactive} >
       {#if statusClasses === "waiting"}
         <p class="font-bold text-lg" > <Spinner color="custom" customColor="fill-accent" bg="text-lighter-light dark:text-lighter-dark" size={6}/> Trwa pobieranie danych...</p>
       {/if}
-            
       {#if statusClasses === "done"}
-          <div class="container mx-auto p-4">
-            <Graph edges={edgesClasses} nodes={nodesClasses} edgeLabels={classEdgeLabels} selectedNode={selectedClassId}/>
-          </div>
-          <Classes data={responseClasses} connected={responseClasses} onSelect={handleClassSelect}></Classes>
+          <Classes data={classesData} ></Classes>
       {/if}
-
     </TabItem>
-
   </Tabs>
-  
+
 </div>
 

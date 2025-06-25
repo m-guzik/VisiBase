@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import cytoscape from 'cytoscape';
 
-    let { edges, nodes, edgeLabels, selectedNode } = $props();
+    let { edges, nodes, edgeLabels, highlightedNode } = $props();
 
     let height: string = '70vh';
     let width: string = '100%';
@@ -18,7 +18,6 @@
       visibleLabels.add('subclass of');
       visibleLabels.add('superclass of');
     };
-  
 
     onMount(() => {
       initializeGraph();
@@ -27,7 +26,6 @@
     function initializeGraph() {
 
       graphData = {nodes, edges};
-
       if (!container || graphData.nodes.length === 0) return;
   
       const elements = [
@@ -38,7 +36,6 @@
             entityType: 'class'
           }
         })),
-        
         ...graphData.edges.map(edge => ({
           data: {
             id: edge.id,
@@ -127,16 +124,18 @@
       });
   
       cy.userZoomingEnabled(true);
-      cy.userPanningEnabled(true);
+      cy.userPanningEnabled(true);      
+      
+      recenter();
 
       updateEdgeVisibility();
     }
 
     $effect (() => {
-      if ( !cy || !selectedNode) return;
+      if ( !cy || !highlightedNode) return;
 
       cy.nodes().removeClass('highlighted');
-      const node = cy.getElementById(selectedNode);
+      const node = cy.getElementById(highlightedNode);
       if (node && node.length > 0) {
         node.addClass('highlighted');
         cy.center(node);

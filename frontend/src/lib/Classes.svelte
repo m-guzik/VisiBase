@@ -11,22 +11,6 @@
         "number" : number,
         "label" : string }
 
-    // interface ConnectedClasses {
-    //         'from_link': string,
-    //         'from_id': string, 
-    //         'from_label': string,
-    //         'to_link': string, 
-    //         'to_id': string, 
-    //         'to_label': string
-    // }
-
-    // interface ConnectingProperty {
-    //     "id" : string,
-    //     'link': string,
-    //     'label': string,
-    //     'connections': ConnectedClasses[]
-    // }
-
     interface ClassConnection {
       'id': string,
       'sourceId': string,
@@ -34,7 +18,7 @@
       'label': string}
 
 
-    let { data } = $props();
+    let { data, instanceName } = $props();
 
     let allClasses: ClassItem[] = $state([]);
     let edges: ClassConnection[] = $state([]);
@@ -85,14 +69,16 @@
 <div >          
     <Tabs tabStyle="full" contentClass="p-4 bg-medium-light text-lighter-dark dark:bg-medium-dark dark:text-medium-light" defaultClass="flex divide-x divide-lighter-light dark:divide-lighter-dark h-10 ">
         <TabItem class="w-full" title="Wszystkie klasy" activeClasses={tabActive} inactiveClasses={tabInactive} open>
-            <div class="container mx-auto p-4">
-                {#key nodes}
-                    <Graph edges={edges} nodes={nodes} edgeLabels={edgeLabels} highlightedNode={classToHighlight}/>
-                {/key}
-            </div>
+            {#if instanceName != 'FactGrid'}            
+                <div class="container mx-auto p-4">
+                    {#key nodes}
+                        <Graph edges={edges} nodes={nodes} edgeLabels={edgeLabels} highlightedNode={classToHighlight}/>
+                    {/key}
+                </div>
+            {/if}
             <ul class="mt-4">
                 {#each allClasses as { link, id, label }}
-                    <li class="text-lg"><a class="font-bold" href={link}>{id}</a><button onclick={() => highlightNode(id)}>{label}</button></li>
+                    <li class="text-lg"><a class="font-bold" href={link}>{id}</a> <button onclick={() => highlightNode(id)}>{label}</button></li>
                 {/each}
             </ul>
         </TabItem>

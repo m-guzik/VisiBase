@@ -62,7 +62,7 @@ def get_classes(sparql_endpoint: str, wiki_url: str, api_endpoint: str):
     classes_ids = set()
     properties_ids = set()
     classes = []
-    connections = []
+    edges = []
     properties_labels = []
     pid_instance_of = search_entities(search_string="instance of", language="en", search_type="property") 
     if len(pid_instance_of) > 0:
@@ -102,7 +102,7 @@ def get_classes(sparql_endpoint: str, wiki_url: str, api_endpoint: str):
         subclass_classes, subclass_connections = get_classes_connected_by_property(pid_subclass_of_search[0], "subclass of")
     
     for connection in subclass_connections:
-        connections.append(connection)
+        edges.append(connection)
 
     for subclass_class in subclass_classes:
         if subclass_class.get("id") not in classes_ids:
@@ -120,32 +120,32 @@ def get_classes(sparql_endpoint: str, wiki_url: str, api_endpoint: str):
         superclass_classes, superclass_connections = get_classes_connected_by_property(pid_superclass_of_search[0], "superclass of")
 
     for connection in superclass_connections:
-        connections.append(connection)
+        edges.append(connection)
 
     for superclass_class in superclass_classes:
         if superclass_class.get("id") not in classes_ids:
             classes.append(superclass_class)
             classes_ids.add(superclass_class.get("id"))
 
-    for class_id in classes_ids:
-        class_item = wbi.item.get(entity_id=class_id)
-        for claim in class_item.claims:
-            if claim.mainsnak.datatype == "wikibase-item":
-                value_id = claim.mainsnak.datavalue["value"]["id"]
-                property_id = claim.mainsnak.property_number
-                if value_id in classes_ids and property_id != pid_subclass_of and property_id != pid_superclass_of:
-                    property_entity = wbi.property.get(entity_id=property_id)
-                    property_label = property_entity.labels.get('en').value
-                    if property_id not in properties_ids:
-                        properties_ids.add(property_id)
-                        properties_labels.append(property_label)
-                    connection_id = class_id + property_id + value_id
-                    connections.append({'id': connection_id,
-                                        'sourceId': class_id,
-                                        'targetId': value_id,
-                                        'label': property_label})
-    
-    edges = connections
+    if 'factgrid' not in wiki_url:
+        for class_id in classes_ids:
+            class_item = wbi.item.get(entity_id=class_id)
+            for claim in class_item.claims:
+                if claim.mainsnak.datatype == "wikibase-item":
+                    value_id = claim.mainsnak.datavalue["value"]["id"]
+                    property_id = claim.mainsnak.property_number
+                    if value_id in classes_ids and property_id != pid_subclass_of and property_id != pid_superclass_of:
+                        property_entity = wbi.property.get(entity_id=property_id)
+                        property_label = property_entity.labels.get('en').value
+                        if property_id not in properties_ids:
+                            properties_ids.add(property_id)
+                            properties_labels.append(property_label)
+                        connection_id = class_id + property_id + value_id
+                        edges.append({'id': connection_id,
+                                            'sourceId': class_id,
+                                            'targetId': value_id,
+                                            'label': property_label})
+        
     nodes = classes
 
     return classes, edges, nodes, properties_labels

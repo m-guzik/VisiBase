@@ -122,7 +122,7 @@
         <p class="font-bold text-lg" > <Spinner color="custom" customColor="fill-accent" bg="text-lighter-light dark:text-lighter-dark" size={6}/> Trwa pobieranie danych...</p>
       {/if}
       {#if statusClasses === "done"}
-          <Classes data={classesData} ></Classes>
+          <Classes data={classesData} instanceName={instanceName} ></Classes>
       {/if}
     </TabItem>
   </Tabs>

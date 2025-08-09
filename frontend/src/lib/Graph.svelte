@@ -1,5 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { Checkbox, Dropdown, DropdownItem } from 'flowbite-svelte';
+    import { ChevronDownOutline } from "flowbite-svelte-icons";
     import cytoscape from 'cytoscape';
 
     let { edges, nodes, edgeLabels, highlightedNode } = $props();
@@ -13,15 +15,30 @@
 
     let visibleLabels = new Set(edgeLabels);
 
+    let layoutOptions = [
+      { name: 'automatyczny', value: { name: 'cose', animate: false, nodeOverlap: 20,
+          idealEdgeLength: () => 100, nodeRepulsion: () => 400000, edgeElasticity: () => 100,
+          nestingFactor: 5, gravity: 80, numIter: 1000, fit: true, padding: 30 } },
+      { name: 'koncentryczny', value: { name: 'concentric', animate: false, padding: 30 } },
+      { name: 'warstwowy', value: { name: 'breadthfirst', directed: true, padding: 30 } },
+      { name: 'kołowy', value: { name: 'circle', padding: 30 } },
+      { name: 'siatkowy', value: { name: 'grid', padding: 30 } } 
+    ];
+
+    let selectedLayout : string = $state(layoutOptions[0].name);
+
     if(edgeLabels.indexOf('subclass of') > -1 && edgeLabels.indexOf('superclass of') > -1){
       visibleLabels.clear;
       visibleLabels.add('subclass of');
       visibleLabels.add('superclass of');
     };
 
+
+
     onMount(() => {
       initializeGraph();
     });
+
 
     function initializeGraph() {
 
@@ -93,24 +110,7 @@
               'text-background-padding': '2px'
             }
           }
-        ],
-        layout: {
-          // name: 'concentric'
-          // name: 'breadthfirst'
-          // name: 'circle'
-          // name: 'grid'
-          name: 'cose',
-          animate: false,
-          nodeOverlap: 20,
-          idealEdgeLength: () => 100,
-          nodeRepulsion: () => 400000,
-          edgeElasticity: () => 100,
-          nestingFactor: 5,
-          gravity: 80,
-          numIter: 1000,
-          fit: true,
-          padding: 30
-        }
+        ]
       });
   
       cy.on('tap', 'node', function(evt: cytoscape.EventObject) {
@@ -124,10 +124,9 @@
       });
   
       cy.userZoomingEnabled(true);
-      cy.userPanningEnabled(true);      
-      
-      recenter();
+      cy.userPanningEnabled(true);
 
+      setLayout(selectedLayout);
       updateEdgeVisibility();
     }
 
@@ -143,6 +142,15 @@
       }
     });
 
+    function setLayout(layout: string){
+      selectedLayout = layout;
+      if (!cy) return;
+      const layoutConfig = layoutOptions.find(l => l.name === layout);
+      if (layoutConfig) {
+        cy.layout(layoutConfig.value).run();
+      }
+    };
+
     
     function toggleLabel(label: string) {
       if (visibleLabels.has(label)) {
@@ -151,7 +159,7 @@
         visibleLabels.add(label);
       }
       updateEdgeVisibility();
-    }
+    };
 
     function updateEdgeVisibility() {
       if (!cy) return;
@@ -160,7 +168,7 @@
         const label = edge.data('label');
         edge.style('display', visibleLabels.has(label) ? 'element' : 'none');
       });
-    }
+    };
 
     function recenter(){
       if (cy) {
@@ -168,22 +176,32 @@
         cy.zoom({lever : 1});
         cy.nodes().removeClass('highlighted');
       }
-    }
-
+    };
+    let btnClass = "ml-2 p-2 flex items-center justify-center border border-solid border-accent-dark text-darker-light dark:text-darker-dark bg-lighter-dark dark:bg-darker-light hover:font-semibold w-50";
   </script>
 
 
   <div class="border-2 rounded overflow-hidden relative border-solid border-darker-light dark:border-lighter-dark" bind:this={container} style="height: {height}; width: {width};">
-    <div class="absolute z-10"> 
-      <div class="mt-2 ml-2 p-2 border border-solid border-accent-dark bg-darker-light dark:bg-lighter-dark w-50">
-        {#each edgeLabels as label}
-          <label class="text-lighter-dark dark:text-darker-light ">
-            <input type="checkbox" checked={visibleLabels.has(label)} onchange={() => toggleLabel(label)}/>
-            {label}
-          </label><br />
-        {/each}
+    <div class="absolute mt-2 z-10">
+      <div>
+        <button class={btnClass}>Wybierz krawędzie <ChevronDownOutline/></button>
+        <Dropdown class="w-50">
+          {#each edgeLabels as label}
+            <DropdownItem onchange={() => toggleLabel(label)}>
+              <Checkbox checked={visibleLabels.has(label)}>{label}</Checkbox>
+            </DropdownItem>
+          {/each}
+        </Dropdown>
       </div>
-      <button class="ml-2 p-2 border border-solid border-accent-dark text-darker-light dark:text-darker-dark bg-lighter-dark dark:bg-darker-light hover:font-semibold w-50" onclick={recenter}>Zresetuj wizualizację</button>
+      <div>
+        <button class={btnClass}>Wybierz układ <ChevronDownOutline/></button>
+        <Dropdown class="w-50">
+          {#each layoutOptions as layout}
+            <DropdownItem onclick={() => (setLayout(layout.name))}>{layout.name}</DropdownItem>
+          {/each}
+        </Dropdown>
+      </div>
+        <button class={btnClass} onclick={recenter}>Zresetuj wizualizację</button>
     </div>
   </div>
   

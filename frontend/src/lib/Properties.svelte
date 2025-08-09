@@ -86,7 +86,7 @@
 
     <ul class="mt-4">
         {#each filteredProperties as { link, id, label }}
-          <li class="text-lg"><a class="font-bold" href={link}>{id}</a><button onclick={() => highlightNode(id)}>{label}</button></li>
+          <li class="text-lg"><a class="font-bold" href={link}>{id}</a> <button onclick={() => highlightNode(id)}>{label}</button></li>
         {/each}
     </ul>
 

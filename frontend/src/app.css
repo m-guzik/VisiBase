@@ -6,17 +6,6 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-primary-50: #fff5f2;
-  --color-primary-100: #fff1ee;
-  --color-primary-200: #ffe4de;
-  --color-primary-300: #ffd5cc;
-  --color-primary-400: #ffbcad;
-  --color-primary-500: #fe795d;
-  --color-primary-600: #ef562f;
-  --color-primary-700: #eb4f27;
-  --color-primary-800: #cc4522;
-  --color-primary-900: #a5371b;
-
 
   --color-lighter-light: #FEF9E1;
   --color-medium-light: #F2E5C7;
@@ -25,44 +14,11 @@
   --color-darker-dark: #02111B;
   --color-medium-dark: #011936;
   --color-lighter-dark: #182E48;
-  /* --color-tertiary-dark: #202030; */
 
   --color-accent: #D62839;
   --color-accent-light: #DE7C73;
   --color-accent-dark: #A12332;
-  /* --color-accent-dark: #6C2138; */
-  /* --color-accent-dark: #6C1D2A; */
 
-
-
-  --color-accent-2: #A31D1D;
-  --color-accent-2-darker-original: #6D2323;
-  --color-accent-2-lighter: #C47765;
-  --color-accent-2-darker: #53171C;
-
-  --color-accent-3: #D62839;
-  --color-accent-3-lighter: #DE7C73;
-  --color-accent-3-darker: #6C1D2A;
-
-  --color-accent-4: #D74E09;
-  --color-accent-4-lighter: #DE8F5B;
-  --color-accent-4-darker: #6D3012;
-
-
-  /* --color-my-light: #E3E2DF;
-  --color-my-medium: #5D001E;
-  --color-my-medium: #E3AFBC;
-  --color-my-medium: #9A1750;
-  --color-my-dark: #EE4C7C;   */
-  /* --color-my-light: #f1f1e6;
-  --color-my-medium: #003049;
-  --color-my-dark: #ffbc46; */
-  /* --color-my-light: #f1dede;
-  --color-my-medium: #d496a7;
-  --color-my-dark: #5d576b; */
-  /* --color-my-light: #f9eae1;
-  --color-my-medium: #cc8b86;
-  --color-my-dark: #7d4f50; */
 }
 
 @source "../node_modules/flowbite-svelte/dist";

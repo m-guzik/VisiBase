@@ -8,7 +8,6 @@
     let apiAddress = data.instance.api;
 </script>
 
-<!-- <Img src='/images/WikiHum_light.svg' /> -->
 
 <div>
   <InstancePage instanceName={instanceName} wikiURL={wikiURL} sparqlEndpoint={sparqlEndpoint} apiEndpoint={apiAddress}></InstancePage>

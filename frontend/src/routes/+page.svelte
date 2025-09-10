@@ -24,7 +24,6 @@
 </script>
 
 
-<!-- <h1 class="text-center">{apiData.message}</h1> -->
 
 <div class="grid grid-cols-1 md:grid-cols-2 place-items-center p-10">
   <Card class="bg-medium-light dark:bg-medium-dark rounded-md w-lg h-full flex flex-col" size="xl">
